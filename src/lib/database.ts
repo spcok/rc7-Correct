@@ -1,5 +1,6 @@
 import { createDatabase, collection } from '@tanstack/db';
-import { createSqliteWasmAdapter } from '@tanstack/db/adapters/sqlite-wasm';
+// Import the dedicated adapter from the package we just installed!
+import { createSqliteWasmAdapter } from '@tanstack/browser-db-sqlite-persistence';
 import sqliteWasm from '@sqlite.org/sqlite-wasm';
 
 // 1. Initialize the pristine SQLite WebAssembly adapter via OPFS
@@ -31,7 +32,7 @@ export const incidentsCollection = collection({ name: 'incidents', primaryKey: '
 export const maintenanceCollection = collection({ name: 'maintenance_logs', primaryKey: 'id' });
 export const firstAidCollection = collection({ name: 'first_aid_logs', primaryKey: 'id' });
 
-// 3. Export the concrete SQL DB
+// 3. Export the concrete SQL DB using the true WASM adapter
 export const db = createDatabase({
   adapter: sqliteAdapter,
   collections: [

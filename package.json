@@ -17,6 +17,7 @@
     "@sqlite.org/sqlite-wasm": "^3.51.2-build8",
     "@supabase/supabase-js": "^2.100.0",
     "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/browser-db-sqlite-persistence": "^0.1.9",
     "@tanstack/db": "^0.6.5",
     "@tanstack/query-async-storage-persister": "^5.97.0",
     "@tanstack/react-form": "^1.29.0",
