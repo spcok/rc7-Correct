@@ -1,5 +1,5 @@
-import { useStore } from '@tanstack/db';
-import { rotaCollection } from '../../lib/database';
+import { useLiveQuery } from '@tanstack/react-db';
+import { rotaCollection } from '@/lib/db';
 import { RotaShift } from '../../types';
 
 export const useRotaData = () => {

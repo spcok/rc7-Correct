@@ -1,5 +1,5 @@
-import { useStore } from '@tanstack/db';
-import { movementsCollection } from '../../lib/database';
+import { useLiveQuery } from '@tanstack/react-db';
+import { movementsCollection } from '@/lib/db';
 
 export const useMovementsData = () => {
   const { data: movements = [], isLoading } = useLiveQuery((q) => q.from({ item: movementsCollection }));

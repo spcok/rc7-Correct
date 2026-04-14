@@ -1,5 +1,5 @@
-import { useStore } from '@tanstack/db';
-import { timesheetsCollection } from '../../lib/database';
+import { useLiveQuery } from '@tanstack/react-db';
+import { timesheetsCollection } from '@/lib/db';
 import { Timesheet } from '../../types';
 
 export const useTimesheetData = (staffName?: string) => {
