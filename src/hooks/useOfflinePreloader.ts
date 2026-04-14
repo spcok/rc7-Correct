@@ -16,14 +16,16 @@ export function useOfflinePreloader() {
     let isMounted = true;
 
     async function executeGlobalSync() {
+      // If offline, assume local SQLite has data and boot immediately
       if (!isOnline) {
         if (isMounted) setIsReady(true);
         return;
       }
 
       try {
-        console.log('📡 [Sync] Hydrating local database from Supabase...');
+        console.log('📡 [Sync] Hydrating local SQLite from Supabase...');
         
+        // Fetch absolute truth from Cloud
         const [listsRes, usersRes, animalsRes, orgRes] = await Promise.all([
           supabase.from('operational_lists').select('*').eq('is_deleted', false),
           supabase.from('users').select('*'),
@@ -31,11 +33,15 @@ export function useOfflinePreloader() {
           supabase.from('organisations').select('*').single()
         ]);
 
+        // Atomic Upsert Helper
         const syncTable = async (collection: any, data: any[] | null) => {
           if (!data || data.length === 0) return;
-          for (const item of data) {
-            await collection.upsert(item).catch(() => {});
-          }
+          // Group into a batch for SQLite performance
+          await collection.utils.writeBatch(async () => {
+            for (const item of data) {
+              await collection.upsert(item).catch(() => {});
+            }
+          });
         };
 
         await Promise.all([
@@ -45,9 +51,9 @@ export function useOfflinePreloader() {
           syncTable(orgSettingsCollection, orgRes.data ? [orgRes.data] : [])
         ]);
 
-        console.log('✅ [Sync] Hydration complete.');
+        console.log('✅ [Sync] Hydration Complete.');
       } catch (error) {
-        console.error('🛑 [Sync] Hydration Error:', error);
+        console.error('🛑 [Sync] Hydration failed:', error);
       } finally {
         if (isMounted) setIsReady(true);
       }
