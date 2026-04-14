@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNetworkStatus } from './useNetworkStatus';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 import { 
   animalsCollection, 
   usersCollection, 
   operationalListsCollection,
-  orgSettingsCollection
-} from '@/lib/db';
+  orgSettingsCollection,
+  medicalLogsCollection,
+  tasksCollection,
+  rotaCollection
+} from '../lib/db';
 
 export function useOfflinePreloader() {
   const [isReady, setIsReady] = useState(false);
@@ -16,16 +19,16 @@ export function useOfflinePreloader() {
     let isMounted = true;
 
     async function executeGlobalSync() {
-      // If offline, assume local SQLite has data and boot immediately
+      // If offline, bypass hydration and signal ready for local-first boot
       if (!isOnline) {
         if (isMounted) setIsReady(true);
         return;
       }
 
       try {
-        console.log('📡 [Sync] Hydrating local SQLite from Supabase...');
+        console.log('📡 [Sync] Hydrating local vault from Supabase...');
         
-        // Fetch absolute truth from Cloud
+        // Priority Data Fetch from Cloud source of truth
         const [listsRes, usersRes, animalsRes, orgRes] = await Promise.all([
           supabase.from('operational_lists').select('*').eq('is_deleted', false),
           supabase.from('users').select('*'),
@@ -33,17 +36,17 @@ export function useOfflinePreloader() {
           supabase.from('organisations').select('*').single()
         ]);
 
-        // Atomic Upsert Helper
+        /**
+         * TanStack DB v0.6 Hydration Pattern:
+         * Uses individual upserts inside a concurrent loop. 
+         * Note: writeBatch is not a valid property of the collection object in this version.
+         */
         const syncTable = async (collection: any, data: any[] | null) => {
           if (!data || data.length === 0) return;
-          // Group into a batch for SQLite performance
-          await collection.utils.writeBatch(async () => {
-            for (const item of data) {
-              await collection.upsert(item).catch(() => {});
-            }
-          });
+          await Promise.all(data.map(item => collection.upsert(item).catch(() => {})));
         };
 
+        // Parallel hydration of core operational data
         await Promise.all([
           syncTable(operationalListsCollection, listsRes.data),
           syncTable(usersCollection, usersRes.data),
@@ -51,7 +54,7 @@ export function useOfflinePreloader() {
           syncTable(orgSettingsCollection, orgRes.data ? [orgRes.data] : [])
         ]);
 
-        console.log('✅ [Sync] Hydration Complete.');
+        console.log('✅ [Sync] Vault Hydration complete.');
       } catch (error) {
         console.error('🛑 [Sync] Hydration failed:', error);
       } finally {
