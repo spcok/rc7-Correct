@@ -6,6 +6,7 @@ import { useAuthStore } from './store/authStore';
 import { router } from './router';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useSupabaseRealtime } from './hooks/useSupabaseRealtime';
+import { useOfflinePreloader } from './hooks/useOfflinePreloader';
 
 // 1. THE OS EVICTION LOCK
 function useStoragePersistence() {
@@ -35,16 +36,25 @@ export default function App() {
   const initialize = useAuthStore(state => state.initialize);
   const currentUser = useAuthStore(state => state.currentUser);
 
-  // 2. THE HYDRATION LOCK
-  const [isHydrated, setIsHydrated] = useState(false);
+  // 2. THE HYDRATION LOCKS
+  const [isAuthHydrated, setIsAuthHydrated] = useState(false);
+  const { isReady: isSyncReady } = useOfflinePreloader(); // ACTIVATE THE SYNC ENGINE
 
   useEffect(() => {
     initialize().finally(() => {
-      setIsHydrated(true);
+      setIsAuthHydrated(true);
     });
   }, [initialize]);
 
-  if (!isHydrated) return null; 
+  // Wait for BOTH Auth and Database Sync to be ready
+  if (!isAuthHydrated || !isSyncReady) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        <p className="mt-4 text-sm font-medium text-gray-500">Establishing SQLite Connection & Syncing...</p>
+      </div>
+    );
+  }
 
   const authContext = {
     isAuthenticated: !!currentUser,

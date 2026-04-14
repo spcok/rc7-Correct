@@ -18,7 +18,7 @@ function walk(dir) {
   return results;
 }
 
-console.log('🔄 Restoring data flow queries to v0.6 syntax...');
+console.log('🔄 Converting hooks to v0.6 Query Builder syntax...');
 const files = walk(srcDir);
 let fixedCount = 0;
 
@@ -26,9 +26,6 @@ files.forEach(file => {
   let content = fs.readFileSync(file, 'utf-8');
   let changed = false;
 
-  // 1. Convert: useLiveQuery(animalsCollection) 
-  //    To: const { data: animals = [] } = useLiveQuery((q) => q.from({ data: animalsCollection })); return animals;
-  // This regex targets hooks specifically to maintain their return value signature
   const hookRegex = /useLiveQuery\s*\(\s*([a-zA-Z0-9_]+Collection)\s*\)/g;
   
   if (hookRegex.test(content)) {
@@ -40,7 +37,7 @@ files.forEach(file => {
 
   if (changed) {
     fs.writeFileSync(file, content, 'utf-8');
-    console.log(`✅ Query Restored: ${file.replace(srcDir, '')}`);
+    console.log(`✅ Hook Fixed: ${file.replace(srcDir, '')}`);
     fixedCount++;
   }
 });
