@@ -1,51 +1,45 @@
-import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { getUKLocalDate } from '../services/temporalService';
-import { useAuthStore } from '../store/authStore';
+import { useEffect, useState } from 'react';
+import { useNetworkStatus } from './useNetworkStatus';
+import { 
+  animalsCollection, 
+  dailyLogsCollection, 
+  medicalLogsCollection, 
+  usersCollection, 
+  operationalListsCollection, 
+  tasksCollection, 
+  movementsCollection, 
+  timesheetsCollection 
+} from '../lib/database';
 
-export const useOfflinePreloader = () => {
-  const queryClient = useQueryClient();
-  const { session } = useAuthStore();
+export function useOfflinePreloader() {
+  const [isReady, setIsReady] = useState(false);
+  const { isOnline } = useNetworkStatus();
 
   useEffect(() => {
-    if (!session || !navigator.onLine) return;
+    async function preload() {
+      try {
+        const collections = [
+          animalsCollection, dailyLogsCollection, medicalLogsCollection, 
+          usersCollection, operationalListsCollection, tasksCollection, 
+          movementsCollection, timesheetsCollection
+        ];
 
-    const prefetchCriticalData = async () => {
-      console.log('🔄 Preloading critical offline data to IndexedDB...');
-      
-      // 1. Preload Active Animals
-      await queryClient.prefetchQuery({
-        queryKey: ['animals'],
-        queryFn: async () => {
-          const { data } = await supabase.from('animals').select('*').eq('status', 'ACTIVE');
-          return data || [];
-        },
-        staleTime: 1000 * 60 * 60 * 24 // Consider fresh for 24 hours
-      });
-
-      // 2. Preload Operational Lists
-      await queryClient.prefetchQuery({
-        queryKey: ['operational_lists'],
-        queryFn: async () => {
-          const { data } = await supabase.from('operational_lists').select('*').eq('is_deleted', false);
-          return data || [];
+        if (isOnline) {
+          for (const col of collections) {
+            if (col && typeof (col as any).sync === 'function') {
+              await (col as any).sync();
+            }
+          }
         }
-      });
+      } catch (error) {
+        console.error('Preloader sync warning:', error);
+      } finally {
+        setIsReady(true);
+      }
+    }
 
-      // 3. Preload Today's Logs
-      const today = getUKLocalDate();
-      await queryClient.prefetchQuery({
-        queryKey: ['daily_logs', 'today', undefined],
-        queryFn: async () => {
-          const { data } = await supabase.from('daily_logs').select('*').eq('log_date', today).eq('is_deleted', false);
-          return data || [];
-        }
-      });
+    preload();
+  }, [isOnline]);
 
-      console.log('✅ Offline cache hydrated successfully.');
-    };
-
-    prefetchCriticalData();
-  }, [session, queryClient]);
-};
+  return { isReady };
+}

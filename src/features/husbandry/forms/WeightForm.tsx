@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { LogType, LogEntry, Animal } from '../../../types';
 import { convertToGrams, convertFromGrams } from '../../../services/weightUtils';
 
-// 1. Strict Zod Schema for pure data integrity
 const weightSchema = z.object({
   logDate: z.string().min(1, "Date is required"),
   userInitials: z.string().min(2, 'Initials required').max(4, 'Max 4 chars'),
@@ -23,18 +22,16 @@ const weightSchema = z.object({
 
 interface WeightFormProps {
   animal: Animal;
-  date: string; // Passed from parent modal
-  userInitials: string; // Passed from auth store
+  date: string;
+  userInitials: string;
   existingLog?: LogEntry;
   onSave: (entry: Partial<LogEntry>) => Promise<void>;
   onCancel: () => void;
 }
 
 export default function WeightForm({ animal, date, userInitials, existingLog, onSave, onCancel }: WeightFormProps) {
-  // Determine the primary unit from the animal's profile
   const targetUnit = animal?.weightUnit === 'lbs_oz' ? 'lb' : (animal?.weightUnit === 'oz' ? 'oz' : 'g');
 
-  // 2. Initialize the modern TanStack Form
   const form = useForm({
     validatorAdapter: zodValidator(),
     defaultValues: {
@@ -56,14 +53,13 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
           userInitials: value.userInitials.toUpperCase(),
           weightGrams: value.weightGrams,
           weightUnit: animal.weightUnit,
-          value: `${value.weightGrams}g`, // Fallback display string
+          value: `${value.weightGrams}g`,
           notes: value.notes
         };
         await onSave(payload);
         onCancel();
       } catch (err) {
         console.error("Submission Error:", err);
-        alert('Failed to save log');
       }
     }
   });
@@ -71,7 +67,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
   return (
     <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }} className="space-y-6">
       
-      {/* Header Info: Record Type & Date */}
       <div className="flex flex-col sm:flex-row gap-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
         <div className="flex-1">
           <label className="flex items-center gap-1.5 text-[10px] font-black text-blue-800 uppercase tracking-widest mb-1">
@@ -96,7 +91,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
         </form.Field>
       </div>
 
-      {/* Staff Initials */}
       <form.Field name="userInitials" validators={{ onChange: weightSchema.shape.userInitials }}>
         {(field) => (
           <div>
@@ -116,7 +110,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
         )}
       </form.Field>
 
-      {/* Dynamic Weight Inputs */}
       <form.Field name="weightValues">
         {(field) => {
           const handleWeightChange = (subField: keyof typeof field.state.value, val: string) => {
@@ -124,7 +117,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
             const newValues = { ...field.state.value, [subField]: num };
             field.handleChange(newValues);
             
-            // Automatically calculate and store total grams for the database
             const totalGrams = convertToGrams(targetUnit as 'g' | 'oz' | 'lb', newValues);
             form.setFieldValue('weightGrams', totalGrams);
           };
@@ -134,7 +126,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
               <h4 className="text-sm font-bold text-slate-800 mb-4">Weight Entry ({targetUnit})</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 
-                {/* Grams UI */}
                 {targetUnit === 'g' && (
                   <div className="sm:col-span-3">
                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Total Grams</label>
@@ -148,7 +139,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
                   </div>
                 )}
 
-                {/* Ounces UI */}
                 {targetUnit === 'oz' && (
                   <>
                     <div className="sm:col-span-2">
@@ -174,7 +164,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
                   </>
                 )}
 
-                {/* Pounds & Ounces UI */}
                 {targetUnit === 'lb' && (
                   <>
                     <div>
@@ -224,7 +213,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
         }}
       </form.Field>
       
-      {/* Notes Field */}
       <form.Field name="notes">
         {(field) => (
           <div>
@@ -239,7 +227,6 @@ export default function WeightForm({ animal, date, userInitials, existingLog, on
         )}
       </form.Field>
       
-      {/* Footer & Submit */}
       <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
         <button type="button" onClick={onCancel} className="px-6 py-3 bg-white border-2 text-slate-600 rounded-xl font-bold uppercase text-xs hover:bg-slate-50 transition-colors">
           Cancel

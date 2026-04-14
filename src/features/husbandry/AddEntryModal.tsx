@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { useLiveQuery } from '@tanstack/react-db';
 import { useAuthStore } from '../../store/authStore';
 import { Animal, LogType, LogEntry } from '../../types';
 import { useOperationalLists } from '../../hooks/useOperationalLists';
-import { usersCollection } from '../../lib/database';
 
 import WeightForm from './forms/WeightForm';
 import FeedForm from './forms/FeedForm';
@@ -25,23 +23,48 @@ interface AddEntryModalProps {
 export default function AddEntryModal({ isOpen, onClose, onSave, animal, initialDate, defaultLogType = LogType.WEIGHT, dailyLogs = [] }: AddEntryModalProps) {
   const [logType, setLogType] = useState<LogType>(defaultLogType);
   
-  // 1. Get raw session ID
-  const authUser = useAuthStore(state => state.user);
+  const user = useAuthStore(state => state.user) || {} as any;
+  const getInitials = () => {
+    if (user.initials) return user.initials;
+    if (user.first_name && user.last_name) return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+    if (user.firstName && user.lastName) return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    if (user.name) {
+      const parts = user.name.split(' ');
+      if (parts.length > 1) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      return parts[0].substring(0, 2).toUpperCase();
+    }
+    if (user.email) return user.email.substring(0, 2).toUpperCase();
+    return 'UNK';
+  };
+  const userInitials = getInitials();
   
-  // 2. Query TanStack DB directly for the official User Profile & Initials
-  const { data: localUsers = [] } = useLiveQuery((q) => q.from({ item: usersCollection }));
-  const localDbProfile = localUsers.find((u: any) => u.id === authUser?.id);
-  const userInitials = localDbProfile?.initials || authUser?.initials || 'UNK';
+  const { lists = [] } = useOperationalLists() || {};
+  const safeLists = lists || []; 
   
-  // 3. Query TanStack DB (via your hook) for the Operational Lists
-  const operationalData = useOperationalLists() || {};
-  const safeLists = operationalData.lists || []; 
+  const getListType = (l: any) => String(l.listType || l.list_type || '').toUpperCase();
   
-  // 4. Safely filter the database snake_case list types
-  const getListType = (l: any) => String(l.listType || l.list_type || '').toLowerCase();
-  const foodTypes = safeLists.filter(l => getListType(l) === 'food_type');
-  const feedMethods = safeLists.filter(l => getListType(l) === 'feed_method');
-  const eventTypes = safeLists.filter(l => getListType(l) === 'event_type').map(l => l.value);
+  let foodTypes = safeLists.filter((l: any) => getListType(l) === 'FOOD_TYPE');
+  if (foodTypes.length === 0) {
+    foodTypes = [
+      { id: 'f1', value: 'Mice' }, { id: 'f2', value: 'Rats' }, { id: 'f3', value: 'Chicks' }, 
+      { id: 'f4', value: 'Quail' }, { id: 'f5', value: 'Insects' }, { id: 'f6', value: 'Fish' },
+      { id: 'f7', value: 'Pellets' }, { id: 'f8', value: 'Fruit/Veg' }
+    ];
+  }
+
+  let feedMethods = safeLists.filter((l: any) => getListType(l) === 'FEED_METHOD');
+  if (feedMethods.length === 0) {
+    feedMethods = [
+      { id: 'm1', value: 'Scatter' }, { id: 'm2', value: 'Tongs' }, { id: 'm3', value: 'Bowl' },
+      { id: 'm4', value: 'Block' }, { id: 'm5', value: 'Gutted' }, { id: 'm6', value: 'Yolked' },
+      { id: 'm7', value: 'Skinned' }
+    ];
+  }
+
+  let eventTypes = safeLists.filter((l: any) => getListType(l) === 'EVENT_TYPE').map((l: any) => l.value);
+  if (eventTypes.length === 0) {
+    eventTypes = ['Routine', 'Medical Check', 'Training Session', 'Enrichment', 'Maintenance'];
+  }
 
   if (!isOpen || !animal) return null;
 
@@ -52,7 +75,6 @@ export default function AddEntryModal({ isOpen, onClose, onSave, animal, initial
   };
 
   const renderForm = () => {
-    // Find the existing log safely without crashing Vite
     const existingLog = dailyLogs.find(l => l.animalId === animal.id && l.logType === logType);
 
     switch (logType) {

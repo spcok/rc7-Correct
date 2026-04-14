@@ -4,7 +4,7 @@ import { zodValidator } from '@tanstack/zod-form-adapter';
 import { z } from 'zod';
 import { Save, Loader2, Calendar, Utensils, Plus, Trash2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import { LogType, LogEntry, Animal, OperationalList, AnimalCategory } from '../../../types';
+import { LogType, LogEntry, Animal, AnimalCategory } from '../../../types';
 
 const feedItemSchema = z.object({
   type: z.string().min(1, "Select food"),
@@ -26,8 +26,8 @@ interface FeedFormProps {
   date: string;
   userInitials: string;
   existingLog?: LogEntry;
-  foodTypes: OperationalList[];
-  feedMethods: OperationalList[]; // NEW: Now perfectly mapped
+  foodTypes: any[];
+  feedMethods: any[];
   onSave: (entry: Partial<LogEntry>) => Promise<void>;
   onCancel: () => void;
 }
@@ -86,7 +86,6 @@ export default function FeedForm({ animal, date, userInitials, existingLog, food
         onCancel();
       } catch (err) {
         console.error("Submission Error:", err);
-        alert('Failed to save log');
       }
     }
   });
@@ -185,7 +184,6 @@ export default function FeedForm({ animal, date, userInitials, existingLog, food
             {(field) => (
               <div className="sm:col-span-2">
                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Method of Feeding</label>
-                {/* THE FIX: Replaced input with dynamic dropdown */}
                 <select 
                   value={field.state.value} 
                   onChange={e => field.handleChange(e.target.value)} 
