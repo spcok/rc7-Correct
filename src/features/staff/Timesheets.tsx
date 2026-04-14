@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Calendar, Trash2, Lock } from 'lucide-react';
 import { useTimesheetData } from './useTimesheetData';
 import AddTimesheetModal from './AddTimesheetModal';
-import { TimesheetStatus } from '@/src/types';
+import { TimesheetStatus } from '@/types';
 import { usePermissions } from '../../hooks/usePermissions';
 
 export default function Timesheets() {

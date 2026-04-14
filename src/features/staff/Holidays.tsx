@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Trash2, Calendar, Lock } from 'lucide-react';
 import { useHolidayData } from './useHolidayData';
 import AddHolidayModal from './AddHolidayModal';
-import { HolidayStatus, Holiday } from '@/src/types';
+import { HolidayStatus, Holiday } from '@/types';
 import { usePermissions } from '../../hooks/usePermissions';
 
 export default function Holidays() {

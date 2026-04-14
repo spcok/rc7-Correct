@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Archive, Edit2, FileText, RefreshCw } from 'lucide-react';
-import { usePermissions } from '@/src/hooks/usePermissions';
-import { UserRole, Animal } from '@/src/types';
+import { usePermissions } from '@/hooks/usePermissions';
+import { UserRole, Animal } from '@/types';
 import { ArchiveAnimalModal } from './ArchiveAnimalModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';

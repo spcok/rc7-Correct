@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo, useTransition } from 'react';
-import { Animal, OrgProfile, AnimalCategory, HazardRating, SignContent } from '@/src/types';
+import { Animal, OrgProfile, AnimalCategory, HazardRating, SignContent } from '@/types';
 import { X, Download, Info, Loader2, Globe, Edit2, Save, RefreshCw, Calendar, LayoutTemplate, Sun, Moon, Sparkles, Droplets } from 'lucide-react';
-import { generateSignageContent, generateExoticSummary } from '@/src/services/geminiService';
+import { generateSignageContent, generateExoticSummary } from '@/services/geminiService';
 import { IUCNBadge } from './IUCNBadge';
 
 interface SignGeneratorProps {
