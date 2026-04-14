@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useLiveQuery } from '@tanstack/react-db';
+import { useStore } from '@tanstack/db';
 import { getUKLocalDate } from '../../services/temporalService';
 import { dailyLogsCollection, animalsCollection } from '../../lib/database';
 import { LogEntry, AnimalCategory } from '../../types';

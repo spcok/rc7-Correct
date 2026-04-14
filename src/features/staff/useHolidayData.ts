@@ -1,4 +1,4 @@
-import { useLiveQuery } from '@tanstack/react-db';
+import { useStore } from '@tanstack/db';
 import { holidaysCollection } from '../../lib/database';
 import { Holiday } from '../../types';
 

@@ -1,4 +1,4 @@
-import { useLiveQuery } from '@tanstack/react-db';
+import { useStore } from '@tanstack/db';
 import { timesheetsCollection } from '../../lib/database';
 import { Timesheet } from '../../types';
 

@@ -1,5 +1,5 @@
 import { createDatabase, collection } from '@tanstack/db';
-import { createSqliteWasmAdapter } from '@tanstack/db/adapters/sqliteWasm';
+import { createSqliteWasmAdapter } from '@tanstack/db/adapters/sqlite-wasm';
 import sqliteWasm from '@sqlite.org/sqlite-wasm';
 
 // 1. Initialize the pristine SQLite WebAssembly adapter via OPFS

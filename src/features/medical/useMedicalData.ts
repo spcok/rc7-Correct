@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useLiveQuery } from '@tanstack/react-db';
+import { useStore } from '@tanstack/db';
 import { medicalLogsCollection, marChartsCollection, quarantineRecordsCollection } from '../../lib/database';
 import { ClinicalNote, MARChart, QuarantineRecord } from '../../types';
 

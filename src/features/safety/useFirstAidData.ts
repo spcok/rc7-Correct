@@ -1,4 +1,4 @@
-import { useLiveQuery } from '@tanstack/react-db';
+import { useStore } from '@tanstack/db';
 import { firstAidCollection } from '../../lib/database';
 import { FirstAidLog } from '../../types';
 

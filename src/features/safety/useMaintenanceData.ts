@@ -1,4 +1,4 @@
-import { useLiveQuery } from '@tanstack/react-db';
+import { useStore } from '@tanstack/db';
 import { maintenanceCollection } from '../../lib/database';
 import { MaintenanceLog } from '../../types';
 
